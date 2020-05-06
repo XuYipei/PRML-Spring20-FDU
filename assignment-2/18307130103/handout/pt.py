@@ -55,9 +55,9 @@ class IRNNCell(nn.Module):
     def __init__(self, inpdim, recdim, act=None):
         super().__init__()
         self.func = F.relu if act is None else act
-        self.w = nn.Parameter(torch.randn(inpdim, recdim).cuda())
-        self.u = nn.Parameter(torch.ones(recdim).cuda())
-        self.b = nn.Parameter(torch.zeros(recdim).cuda())
+        self.w = nn.Parameter(torch.randn(inpdim, recdim))
+        self.u = nn.Parameter(torch.ones(recdim))
+        self.b = nn.Parameter(torch.zeros(recdim))
 
     def forward(self, x_t, h_tm1):
         return self.func(F.linear(x_t, self.w, self.b) + torch.mul(h_tm1, self.u))
@@ -74,7 +74,7 @@ class IRNN(nn.Module):
         self.cells = nn.ModuleList(cells)
 
     def forward(self, x):
-        hidden = Variable(torch.zeros(x.size()[0], self.output_size).cuda())
+        hidden = Variable(torch.zeros(x.size()[0], self.output_size))
         seq = []
         for i in range(x.size()[1]):
             x_t = x[:, i, :]
@@ -107,15 +107,15 @@ class myAdvPTIRNNModel(nn.Module):
 
 def compute_loss(logits, labels):
     losses = nn.CrossEntropyLoss()
-    losses = losses.cuda()
+    losses = losses
     return losses(logits.view(-1, 10), labels.view(-1))
 
 
 def train_one_step(model, optimizer, x, y, label):
     model.train()
     optimizer.zero_grad()
-    logits = model(torch.tensor(x).cuda(), torch.tensor(y).cuda())
-    loss = compute_loss(logits, torch.tensor(label).cuda())
+    logits = model(torch.tensor(x), torch.tensor(y))
+    loss = compute_loss(logits, torch.tensor(label))
 
     # compute gradient
     loss.backward()
@@ -149,7 +149,7 @@ def evaluate_big(model, maxlen = 51):
     batch_size = 5000
     Nums1, Nums2, results = prepare_batch_big(batch_size, maxlen=maxlen)
     with torch.no_grad():
-        logits = model(torch.tensor(Nums1).cuda(), torch.tensor(Nums2).cuda())
+        logits = model(torch.tensor(Nums1), torch.tensor(Nums2))
     logits = logits.cpu().numpy()
     pred = np.argmax(logits, axis=-1)
     
@@ -165,7 +165,7 @@ def evaluate(model):
     datas = gen_data_batch(batch_size=10000, start=0, end=1000000000)
     Nums1, Nums2, results = prepare_batch(*datas, maxlen=11)
     with torch.no_grad():
-        logits = model(torch.tensor(Nums1).cuda(), torch.tensor(Nums2).cuda())
+        logits = model(torch.tensor(Nums1), torch.tensor(Nums2))
     logits = logits.cpu().numpy()
     pred = np.argmax(logits, axis=-1)
     res = results_converter(pred)
@@ -179,7 +179,6 @@ def evaluate(model):
 
 def pt_main(choice = 'rnn', epoch = 500, batch_size = 200, train_set = 'normal', evaluate_set = 'normal'):
     model = myPTRNNModel(choice = choice)
-    model = model.cuda()
     optimizer = torch.optim.Adam(params=model.parameters(), lr=0.001)
     if train_set == 'normal':
         train(epoch, batch_size, model, optimizer)
@@ -195,7 +194,6 @@ def pt_adv_main(choice = 'rnn', epoch = 500, batch_size = 200, train_set = 'norm
         model = myAdvPTRNNModel()
     else:
         model = myAdvPTIRNNModel()
-    model = model.cuda()
     optimizer = torch.optim.Adam(params=model.parameters(), lr=0.001)
     if train_set == 'normal':
         train(epoch, batch_size, model, optimizer)
