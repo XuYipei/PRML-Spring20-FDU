@@ -85,7 +85,6 @@ class GMM:
     def Init(self, sample, classes = 3, epoch = 10):
         n = sample.shape[0]
         if (epoch == 0):
-            print('random')
             for i in range(classes):
                 ii = random.randint(0, n - 1)
                 self.mu = np.append(self.mu, np.asarray([sample[ii]]), 0)

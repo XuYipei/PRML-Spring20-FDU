@@ -2,6 +2,18 @@ import copy
 import numpy as np
 import matplotlib.pyplot as plt
 
+def Outputdata(sample, label, filename='1'):
+    n = sample.shape[0]
+    data = ''
+    for i in range(sample.shape[0]):
+        for j in range(sample.shape[1]):
+            data += str(sample[i][j]) + ' '
+        data += str(label[i]) + '\n'
+        
+    with open('./' + filename + '.data', 'w') as f:
+        f.write(data)
+        
+
 def Generate(mean = [[0, 0], [-4, -4], [3, 5]], cov = [[[1, 0], [0, 1]], [[1.5, 0], [0, 1.5]], [[2, 1], [1, 2]]], prior = [.3, .3, .4], n = 500, filename = "1"):
     '''
         create data with Gaussian distribution.
@@ -96,7 +108,6 @@ def Picture(sample, label, filename = '1', mean = np.zeros((0, 2)), color = ['#F
         x[label[i]].append(sample[i][0])
         y[label[i]].append(sample[i][1])
     n = mean.shape[0]
-    print(mean)
     for i in range(n):
         x[m].append(mean[i][0])
         y[m].append(mean[i][1])
